@@ -7,8 +7,8 @@ from datetime import datetime
 app = FastAPI()
 
 # 🎯 엔드포인트 설정 (실제 ngrok 주소로 업데이트 필요)
-AI_SERVER_URL = "https://[AI_SERVER_NGROK_URL]/predict"
-BACKEND_B_URL = "https://[BACKEND_B_NGROK_URL]/api/detections"
+AI_SERVER_URL = "http://localhost:8000/predict"
+BACKEND_B_URL = "http://localhost:8000/api/detections"
 AUTH_TOKEN = "jnu_asphalt_12"
 
 @app.websocket("/ws/pothole")
