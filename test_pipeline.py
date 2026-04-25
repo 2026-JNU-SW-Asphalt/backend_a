@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 
 # 🎯 목적지 주소
 ai_url = "https://braydon-unfused-else.ngrok-free.dev/predict"
-backend_b_url = "http://10.10.147.109:8000/api/detections"
+backend_b_url = "https://ila-dualistic-arrestingly.ngrok-free.dev/api/detections"
 
 print("==================================================")
 print("🚀 [Phase 1] AI 서버로 이미지 판독을 요청합니다...")
