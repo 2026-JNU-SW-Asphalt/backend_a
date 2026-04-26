@@ -8,8 +8,9 @@ from datetime import datetime
 
 app = FastAPI()
 
-# --- 🛠️ 1. 서버 기본 셋업 (문지기 배치) ---
-IMAGE_DIR = "captured_images"
+# --- 🛠️ 1. 서버 기본 셋업 (수정된 부분: 절대 경로 사용) ---
+BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # 현재 app.py가 있는 폴더 위치
+IMAGE_DIR = os.path.join(BASE_DIR, "captured_images")  # 그 안의 captured_images 폴더
 if not os.path.exists(IMAGE_DIR):
     os.makedirs(IMAGE_DIR)
 
@@ -65,7 +66,7 @@ async def pothole_integration_pipeline(websocket: WebSocket, token: str = Query(
                         with open(file_path, "wb") as f:
                             f.write(image_bytes)
                         
-                        image_url = f"{wss://dilute-distinct-unpack.ngrok-free.dev/ws/pothole?token=jnu_asphalt_12}/images/{filename}"
+                        image_url = f"wss://dilute-distinct-unpack.ngrok-free.dev/ws/pothole?token=jnu_asphalt_12/images/{filename}"
 
                         # 위치 정보(GPS) 처리
                         gps_info = data.get('gps')
@@ -97,6 +98,9 @@ async def pothole_integration_pipeline(websocket: WebSocket, token: str = Query(
                         
                         if b_res.status_code == 200:
                             print(f"✅ [최종 성공] 세션 {session_id} - URL 백엔드 B 전송 완료!")
+                        else:
+                            print(f"⚠️ [전송 실패] 백엔드 B가 거절했습니다. 상태 코드: {b_res.status_code}")
+                            print(f"🔍 B의 거절 사유: {b_res.text}")
                 
         except WebSocketDisconnect:
             print(f"📴 연결 종료 - 세션 ID: {session_id}")
