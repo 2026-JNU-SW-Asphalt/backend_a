@@ -7,8 +7,8 @@ from datetime import datetime
 app = FastAPI()
 
 # 🎯 엔드포인트 설정 (실제 ngrok 주소로 업데이트 필요)
-AI_SERVER_URL = "http://localhost:8000/predict"
-BACKEND_B_URL = "http://localhost:8000/api/detections"
+AI_SERVER_URL = "https://braydon-unfused-else.ngrok-free.dev/predict"
+BACKEND_B_URL = "https://ila-dualistic-arrestingly.ngrok-free.dev/api/detections"
 AUTH_TOKEN = "jnu_asphalt_12"
 
 @app.websocket("/ws/pothole")
@@ -94,4 +94,25 @@ async def pothole_integration_pipeline(websocket: WebSocket, token: str = Query(
 if __name__ == "__main__":
     import uvicorn
     # 프론트엔드 접속을 위해 8080 포트 사용
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app, host="0.0.0.0", port=8080)   
+
+from fastapi.staticfiles import StaticFiles
+import os
+
+# 이미지를 저장할 폴더 생성
+IMAGE_DIR = "captured_images"
+if not os.path.exists(IMAGE_DIR):
+    os.makedirs(IMAGE_DIR)
+
+# 외부에서 이 폴더에 접속할 수 있도록 길을 열어줌
+app.mount("/images", StaticFiles(directory=IMAGE_DIR), name="images")
+
+# [Phase 1.5] 이미지를 파일로 저장하고 URL 만들기
+filename = f"pothole_{int(time.time())}.webp"
+file_path = os.path.join(IMAGE_DIR, filename)
+
+with open(file_path, "wb") as f:
+    f.write(image_bytes)
+
+# 백엔드 B에게 줄 URL 조립 (내 ngrok 주소 활용)
+image_url = f"https://[대은님_ngrok_주소]/images/{filename}"

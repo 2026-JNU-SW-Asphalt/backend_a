@@ -59,7 +59,7 @@ try:
                 "is_valid_gps": True
             }
             
-            # 5. 백엔드 B로 최종 발사!
+            # 5. 백엔드 B로 최종 발사!s
             b_response = requests.post(backend_b_url, json=payload_to_b, timeout=5.0)
             
             if b_response.status_code == 200:
