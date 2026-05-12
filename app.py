@@ -47,6 +47,7 @@ async def pothole_integration_pipeline(websocket: WebSocket, token: str = Query(
             while True: # 무한루프: 프론트가 연결끊기 전까지 계속 데이터(사진, 위치) 기다리기
                 data = await websocket.receive_json() #  프론트엔드가 쏜 데이터를 JSON형태로 받기
                 
+            
                 # ----------------------------------------------------------------
                 # 👀 [프론트엔드 확인용 로그]
                 print("\n=== 📥 프론트엔드 원본 데이터 수신 내역 ===")
@@ -76,6 +77,24 @@ async def pothole_integration_pipeline(websocket: WebSocket, token: str = Query(
                     header, encoded = data['image'].split(",", 1) 
                     # 핵심테스트 encoded를 컴퓨터가 읽을 수 있는 이미지 데이터로 변환
                     image_bytes = base64.b64decode(encoded)
+                    
+                    # ==========================================================
+                    # 🔄 [전처리 추가] AI 서버로 보내기 전 이미지 90도 강제 회전
+                    # ==========================================================
+                    # 1. 바이트 데이터를 이미지(PIL) 객체로 열기
+                    img = Image.open(io.BytesIO(image_bytes))
+                    
+                    # 2. 90도 회전 (expand=True는 잘림 방지 필수 옵션!)
+                    # 오른쪽으로 누워있다면 -90 (또는 270), 왼쪽으로 누워있다면 90
+                    rotated_img = img.rotate(-90, expand=True) 
+                    
+                    # 3. 회전된 이미지를 다시 WEBP 바이트로 변환해서 덮어쓰기
+                    img_byte_arr = io.BytesIO()
+                    rotated_img.save(img_byte_arr, format='WEBP')
+                    
+                    # 핵심: 기존 image_bytes 변수를 회전된 이미지로 바꿔치기!
+                    image_bytes = img_byte_arr.getvalue() 
+                    # ==========================================================
                     
                     # ✨ [해상도 확인 코드] 변환된 이미지의 가로세로 길이를 재봅니다!
                     img_for_size = Image.open(io.BytesIO(image_bytes))
