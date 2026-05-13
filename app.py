@@ -41,12 +41,33 @@ async def pothole_integration_pipeline(websocket: WebSocket, token: str = Query(
     session_id = int(time.time()) # 지금 접속한 사람에게 현재 시간 숫자로 바꿔서 세션 id 주기
     print(f"프론트와 실시간 연결 성공 - 세션 ID: {session_id}") # 터미널에 성공 로그 찍기
 
+    # ==========================================================
+    # ⏱️ [FPS 측정용 변수 세팅 (현재 접속한 클라이언트 전용)]
+    last_print_time = time.time()
+    frame_count = 0
+    # ==========================================================
+
     # AI, B에 요청을 보낼 준비
     async with httpx.AsyncClient() as client:
         try:
             while True: # 무한루프: 프론트가 연결끊기 전까지 계속 데이터(사진, 위치) 기다리기
                 data = await websocket.receive_json() #  프론트엔드가 쏜 데이터를 JSON형태로 받기
                 
+                # ==========================================================
+                # ⏱️ [FPS 계산 로직 추가]
+                # ==========================================================
+                frame_count += 1 # 프레임 1장 들어올 때마다 카운트 +1
+                current_time = time.time()
+                elapsed_time = current_time - last_print_time
+                
+                if elapsed_time >= 1.0: # 1초가 지났으면
+                    fps = frame_count / elapsed_time
+                    print(f"📡 [네트워크 상태] 현재 수신 속도: {fps:.1f} FPS (핫스팟 점검 중)")
+                    
+                    # 카운트와 시간 초기화
+                    frame_count = 0
+                    last_print_time = current_time
+                # ==========================================================
             
                 # ----------------------------------------------------------------
                 # 👀 [프론트엔드 확인용 로그]
@@ -71,6 +92,7 @@ async def pothole_integration_pipeline(websocket: WebSocket, token: str = Query(
                     print("⚠️ Base64 이미지가 없습니다!")
                 print("==========================================\n")
                 # ----------------------------------------------------------------
+                
                 # 프론트엔드 이미지 디코딩 - 프론트가 준 base64 텍스트를 진짜 이미지로 바꿈.
                 try:
                     # "data:image/jpeg;base64,"같은 header 잘라내고 핵심테스트 encoded만 분리
